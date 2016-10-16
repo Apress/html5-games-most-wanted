@@ -1,0 +1,9 @@
+		function initWebGL() {
+				…
+				if (!gl) {
+                    alert("Error trying to initialise WebGL");
+                } else {
+                    gl.clearColor(0.7, 0.7, 0.7, 1.0);    
+                    gl.enable(gl.DEPTH_TEST);
+                }
+        }

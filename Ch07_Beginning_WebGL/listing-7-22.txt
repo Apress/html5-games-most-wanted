@@ -1,0 +1,40 @@
+	...
+		dartboardVertexPositionBuffer = null,
+        dartboardVertexTexCoordBuffer = null,
+        dartboardTexture = null,
+        dartboardDiameter = 2.5,
+        dartboard_sections = 20, //number of circular sections
+        dartboard_z = -7.0,
+	...
+
+         function initDartboardBuffer(){
+                var vertices = [0,0,0], //center vertex
+                texCoords = [0,0],
+                x,
+                y,
+                radians = 0;
+
+                //programatically create vertices.
+                //will divide circle into 20 sections = 18 degrees each    
+                for(var i=0; i < dartboard_sections; i++){
+                    radians = i * 2.0 * Math.PI/dartboard_sections;
+                    
+                    x = Math.cos(radians);
+                    y = Math.sin(radians);
+
+                    vertices = vertices.concat([x*dartboardDiameter, y*dartboardDiameter, dartboard_z]);
+                    texCoords = texCoords.concat([x/2.0 + .5, y/2.0 + .5]);
+                }
+             
+                dartboardVertexPositionBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, dartboardVertexPositionBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+                dartboardVertexPositionBuffer.itemSize = 3;
+                dartboardVertexPositionBuffer.numItems = (dartboard_sections + 1);
+
+                dartboardVertexTexCoordBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, dartboardVertexTexCoordBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
+                dartboardVertexTexCoordBuffer.itemSize = 2;
+                dartboardVertexTexCoordBuffer.numItems = (dartboard_sections + 1);         
+            }  

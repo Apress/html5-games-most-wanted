@@ -1,0 +1,24 @@
+			function initBuffers() {  
+                squareVerticesBuffer = gl.createBuffer();  
+                gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);  
+    
+                var vertices = [  
+                    1.0,  1.0, 0.0,  
+                   -1.0,  1.0, 0.0,  
+                    1.0, -1.0, 0.0,  
+                   -1.0, -1.0, 0.0  
+                ];  
+    
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+                    
+                var colors = [
+                    1.0,  1.0,  1.0,  1.0,    // white
+                    0.05, 0.05, 0.7,  1.0,    // dark blue
+                    0.0,  1.0,  1.0,  1.0,    // cyan
+                    0.0,  0.0,  1.0,  1.0     // blue
+                ];
+  
+                squareVerticesColorBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesColorBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+            }  

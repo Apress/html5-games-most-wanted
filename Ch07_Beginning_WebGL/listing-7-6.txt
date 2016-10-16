@@ -1,0 +1,56 @@
+			function makeShader(src, type){
+                var shader = gl.createShader(type);
+                gl.shaderSource(shader, src);            
+                gl.compileShader(shader);  
+
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {  
+                    alert("Error compiling shader: " + gl.getShaderInfoLog(shader));  
+                }  
+                return shader;
+            }
+			
+            function attachShaders(){
+                gl.attachShader(shaderProgram, vertexShader);  
+                gl.attachShader(shaderProgram, fragmentShader);  
+                gl.linkProgram(shaderProgram);  
+        
+                if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {  
+                    alert("Unable to initialize the shader program.");  
+                }  
+            }	
+
+            function createShaderProgram(){        
+                shaderProgram = gl.createProgram();  
+                attachShaders();
+        
+                gl.useProgram(shaderProgram);  
+            }
+
+            function setupShaders(fragmentShaderSRC, vertexShaderSRC){                     
+                fragmentShader = makeShader(fragmentShaderSRC, gl.FRAGMENT_SHADER);
+                vertexShader = makeShader(vertexShaderSRC, gl.VERTEX_SHADER);
+        
+                createShaderProgram();
+            }			
+			            
+            function initShaders() {
+                var fragmentShaderSRC = null,
+                vertexShaderSRC = null;
+                $.ajax({
+                    async: false,
+                    url: 'shader.fs',
+                    success: function (data) {
+                        fragmentShaderSRC = data.firstChild.textContent;
+                    },
+                    dataType: 'xml'
+                });
+                $.ajax({
+                    async: false,
+                    url: 'shader.vs',
+                    success: function (data) {
+                        vertexShaderSRC = data.firstChild.textContent;
+                    },
+                    dataType: 'xml'
+                });
+                setupShaders(fragmentShaderSRC, vertexShaderSRC);
+            }

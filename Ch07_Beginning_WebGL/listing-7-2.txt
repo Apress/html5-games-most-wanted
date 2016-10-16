@@ -1,0 +1,6 @@
+<script id="shader-vs" type="x-shader/x-vertex">
+	attribute vec3 aVertexPosition;
+	void main(void) {
+		gl_Position = aVertexPosition;
+	}
+</script>

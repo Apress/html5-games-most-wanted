@@ -1,0 +1,39 @@
+			function initBuffers() {  
+                initOctahedronBuffer();
+                initDartboardBuffer();
+            }
+
+			function drawScene() {  
+                gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);  
+                    
+                mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+
+                drawDartboard();
+                drawDart();                
+            }
+            
+            function drawDartboard(){               
+                //draw dartboard
+                gl.useProgram(shaderPrograms[TEXTURE_SHADER]);  
+              	
+                mat4.identity(mvMatrix);
+                mat4.translate(mvMatrix, [0, 0, dartboard_z]);
+                setMatrixUniforms(TEXTURE_SHADER);  
+                
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, dartboardTexture);
+                gl.uniform1i(shaderPrograms[TEXTURE_SHADER].samplerUniform, 0);
+                                   
+                gl.bindBuffer(gl.ARRAY_BUFFER, dartboardVertexPositionBuffer);  
+                gl.vertexAttribPointer(vertexPositionAttributes[TEXTURE_SHADER], 3, gl.FLOAT, false, 0, 0);  
+                    
+                gl.bindBuffer(gl.ARRAY_BUFFER, dartboardVertexTexCoordBuffer);
+                gl.vertexAttribPointer(textureCoordAttributes[TEXTURE_SHADER], 2, gl.FLOAT, false, 0, 0);
+              
+                gl.drawArrays(gl.TRIANGLE_FAN, 1, dartboard_sections);   
+            }
+
+			function drawDart (){               
+                //draw dart
+			}

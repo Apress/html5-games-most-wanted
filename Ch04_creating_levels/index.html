@@ -1,0 +1,44 @@
+<!DOCTYPE html> 
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Create, Save and Load Tracks</title>
+    <link rel="stylesheet" href="stylesheets/style.css">
+  </head>
+
+  <body>
+
+    <section id="grid-container">
+      <canvas id="grid"></canvas>
+      <form>
+        <button id="clear-track">Clear</button>
+        <button id="save-track">Save</button>
+        
+        <input id="track-name" type="text" placeholder="Track Name"/>
+      </form>
+    </section>
+
+    <section id="bricks-container">
+      <form>
+        <button id="square-brick">Square</button>
+        <button id="triangle-brick">Triangle</button>
+        <button id="circle-brick">Circle</button>
+        <button id="curve-brick">Curve</button>
+      </form>
+    </section>
+
+    <section id="tracks-container">
+      <h1>Saved Tracks</h1>
+    </section>
+
+    <script src="javascripts/jquery.js"></script>
+    <script src="javascripts/bricks/square.js"></script>
+    <script src="javascripts/bricks/circle.js"></script>
+    <script src="javascripts/bricks/triangle.js"></script>
+    <script src="javascripts/bricks/curve.js"></script>
+    <script src="javascripts/grid.js"></script>
+    <script src="javascripts/store.js"></script>
+    <script src="javascripts/application.js"></script>
+
+  </body>
+</html>

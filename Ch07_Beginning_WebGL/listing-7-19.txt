@@ -1,0 +1,88 @@
+		function initBuffers() {  
+
+                octahedronVertexPositionBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, octahedronVertexPositionBuffer);
+                vertices = [
+                    // top faces
+                    0.0, height, 0.0,
+                    1.0, 0.0, 1.0,
+                        -1.0, 0.0, 1.0,
+
+                    0.0, height, 0.0,
+                    1.0, 0.0, -1.0,
+                        -1.0, 0.0, -1.0,
+
+                    0.0, height, 0.0,
+                    1.0, 0.0, 1.0,
+                    1.0,  0.0, -1.0,
+
+                    0.0, height,  0.0,
+                        -1.0, 0.0,  1.0,
+                        -1.0,  0.0,  -1.0,
+
+                    //bottom faces
+                    0.0, -height, 0.0,
+                    1.0, 0.0, 1.0,
+                        -1.0, 0.0, 1.0,
+
+                    0.0, -height, 0.0,
+                    1.0, 0.0, -1.0,
+                        -1.0, 0.0, -1.0,
+
+                    0.0, -height, 0.0,
+                    1.0, 0.0, 1.0,
+                    1.0,  0.0, -1.0,
+
+                    0.0, -height,  0.0,
+                        -1.0, 0.0,  1.0,
+                        -1.0,  0.0,  -1.0
+                ];
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+                octahedronVertexPositionBuffer.itemSize = 3;
+                octahedronVertexPositionBuffer.numItems = 24;
+
+                colors = [
+                    [1.0, 0.0, 0.0, 1.0], // red
+                    [0.0, 1.0, 0.0, 1.0], // green
+                    [0.0, 0.0, 1.0, 1.0], // blue
+                    [1.0, 1.0, 0.0, 1.0], // yellow
+                   
+                    [1.0, 1.0, 1.0, 1.0], // white
+                    [0.0, 0.0, 0.0, 1.0], // black
+                    [1.0, 0.0, 1.0, 1.0], // magenta
+                    [0.0, 1.0, 1.0, 1.0]  // cyan
+                ];
+
+
+                var unpackedColors = [];
+                //8 colors by 4 channels - rgba
+                for(var i=0; i < 8; ++i){
+                    for(var k=0; k < 3; ++k){
+                        var color = colors[i];
+                        unpackedColors = unpackedColors.concat(color);
+                    }
+                }
+
+                octahedronVertexColorBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, octahedronVertexColorBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(unpackedColors), gl.STATIC_DRAW);
+                
+                octahedronVertexColorBuffer.itemSize = 4;
+                octahedronVertexColorBuffer.numItems = 24;
+
+                var octahedronVertexIndices = [
+                    //top
+                    0, 1, 2,      3, 4, 5,    
+                    6, 7, 8,      9, 10, 11,    
+                    //bottom
+                    12, 13, 14,   15, 16, 17,
+                    18, 19, 20,   21, 22, 23
+                ];
+                
+                octahedronVertexIndexBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, octahedronVertexIndexBuffer);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(octahedronVertexIndices), gl.STATIC_DRAW);
+                octahedronVertexIndexBuffer.itemSize = 1;
+                octahedronVertexIndexBuffer.numItems = 24;
+            }

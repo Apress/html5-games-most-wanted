@@ -1,0 +1,11 @@
+			function executeProgram(){
+                getMatrixUniforms();
+                getVertexAttributes();
+
+                initBuffers();            
+
+                (function animLoop(){
+                    drawScene();
+                    requestAnimFrame(animLoop, canvas);
+                })();
+            }

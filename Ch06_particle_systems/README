@@ -1,0 +1,15 @@
+Particle Systems Examples
+=========================
+These are the examples of the particle systems described in the book
+ HTML5 Games Most Wanted in chapter 6 Particle Systems. They are high fidelity examples
+ and require a fast computer and a modern browser to run (firefox, chrome). 
+
+License
+-------
+All the source code is licensed under an MIT license (see LICENSE) so 
+you can reuse it quite freely. 
+
+Attribution
+-----------
+Some of the examples make use of jQuery which is also licensed under the
+ MIT license. Thanks to the entire jQuery team for that!

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+   <head>
+       <style>
+           body{   background: gray; }
+           canvas{ background: white; }
+       </style>
+   </head>
+   <body>
+       <canvas id="canvas"></canvas> 
+       <script type="text/javascript">
+           var canvas = document.getElementById("canvas");
+           var gl;
+           try {
+               gl = canvas.getContext("experimental-webgl");
+           } catch (e) {
+               alert(e);
+           }
+           if (!gl) {
+               alert("Error trying to initialise WebGL. Try get.webgl.org”);
+           } else {
+           gl.clearColor(0.0, 0.7, 0.0, 1.0);
+               gl.clear(gl.COLOR_BUFFER_BIT);
+           }
+       </script>
+   </body>
+</html>

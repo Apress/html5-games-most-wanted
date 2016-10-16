@@ -1,0 +1,48 @@
+html, body {
+  background: #000;
+  font-family: Arial;
+  font-size: 13px;
+  color:#ffffff;
+}
+
+#titleName{color:#fff; margin-left:auto; margin-right:auto; width:900px; text-align: center; font-size:30px; font-weight:lighter;}
+
+
+#tit {
+  width:900px;
+  height:500px;
+  margin-left:auto;
+  margin-right:auto;
+  border: white solid 5px;
+}
+
+#soundtrack, sound0, sound1, sound2, sound3, sound4, sound5 {display:none;}
+
+                
+#extraInfo{width:900px; margin-left: auto; margin-right:auto; color: #aaa; font-size: 12px; margin-top: 5px;
+}
+p{float: left;}
+#me{text-align:left; width: 300px; 
+}
+#instruct{ color:#D53DFF; text-align:center; width: 300px;
+}
+#music{text-align:right; width: 300px;
+}
+a{color:#D53DFF; text-decoration:none;}
+
+#how{display:none;
+	width:900px;
+	position:absolute;
+	top:72px;
+	margin-left:auto;
+	margin-right:auto;
+	 z-index:5;
+	 
+}
+#loading{
+	position:absolute;
+	width:200px;
+	text-align:center;
+	color:#fff;
+	font-weight:lighter;
+}

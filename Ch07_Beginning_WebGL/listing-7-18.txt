@@ -1,0 +1,12 @@
+			mat4.translate(mvMatrix, [3*x, y, -12.0 + 5*z]);
+
+                if(!paused){    
+					x = Math.cos(translationAngle);
+					y = x;
+					z = Math.sin(translationAngle);
+                    rotationRadians = rotationIncrement/(180/Math.PI);
+
+					rotationIncrement++; 
+                    translationAngle += .01;
+                }
+                mat4.rotate(mvMatrix, rotationRadians, rotationVector);

@@ -1,0 +1,24 @@
+		vertices = [
+                    0.0, height, 0.0,
+                    width, 0.0, width,
+                    -width, 0.0, width,
+                    -width, 0.0, -width,
+                    width, 0.0, -width,
+                    0.0, -height, 0.0,
+                ];
+
+                octahedronVertexPositionBuffer.itemSize = 3;
+                octahedronVertexPositionBuffer.numItems = 6;
+
+     //A,B,C,D = 1,2,3,4  E = 0, F = 5
+         var octahedronVertexIndices = [
+                    //top
+                    0, 1, 2,      0, 1, 4,    
+                    0, 2, 3,      0, 3, 4,    
+                    //bottom
+                    5, 1, 2,      5, 1, 4,    
+                    5, 2, 3,      5, 3, 4,    
+                ];
+
+           octahedronVertexIndicesBuffer.itemSize = 1;
+           octahedronVertexIndicesBuffer.numItems = 24;

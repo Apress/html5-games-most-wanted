@@ -1,0 +1,158 @@
+@import compass
+// Globals
+
+@font-face
+  src: url(Chewy.ttf)
+  font-family: Chewy
+
+html
+  background: #000
+  color: #fff
+
+body
+  background: #000
+  color: #fff
+  overflow: hidden
+  padding: 0
+  margin: 0
+  font-size: 30px
+  font-family: Chewy, arial, serif
+
+a, canvas, *
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0)
+  -webkit-user-select: none
+  user-select: none
+  -webkit-touch-callout: none
+
+a
+  color: #ec9
+  &:hover
+    color: #fff
+
+header
+  padding: 5px 20px
+
+.buttons
+  a
+    text-decoration: none
+    background-color: #ec9
+    color: black
+    padding: 1px 8px
+    +border-radius(10px)
+
+// Page system
+#pages
+  &.enabletransition > section
+    +transition-duration((1s, 0s))
+  > section
+    .content
+      min-height: 74%
+    background: black url(background.jpg) no-repeat 50% 0%
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    +box-sizing(border-box)
+    +transition-delay((0s, 2s))
+    -webkit-transition-property: -webkit-transform, opacity
+    -moz-transition-property: -moz-transform, opacity
+    -o-transition-property: -o-transform, opacity
+    transition-property: transform, opacity
+    +translate3d(-100%, 0, 0)
+    clear: both
+    z-index: -1
+    opacity: 0
+    &.current
+      +transition-delay((0s, 0s))
+      +translate3d(0%, 0, 0)
+      z-index: 0
+      opacity: 1
+    &.current ~ section
+      z-index: -1
+      opacity: 0
+      +transition-delay((0s, 2s))
+      +translate3d(100%, 0, 0)
+
+// Menu
+#menu
+  text-align: center
+  ul
+    list-style: none
+    padding: 0
+    li a
+      display: block
+      text-decoration: none
+      width: 90%
+      padding: 5px 10px
+      margin: 10px 5%
+      background: black
+      +border-radius(10px)
+
+
+// The game
+#black-eated, #white-eated
+  width: 100%
+  height: 40px
+  min-height: $pieceSize/2
+  margin: 5px 0
+  padding: 0 5px
+  clear: both
+  img
+    height: $pieceSize/2
+
+#black-eated
+  background: #333
+
+#white-eated
+  background: #ccc
+
+#chessboardContainer
+  text-align: center
+
+#chessboard
+  overflow: hidden
+  text-align: center
+  display: inline-block
+  margin: 20px 0px
+
+.piece
+  @each $color in black, white
+    &.#{$color} 
+      @each $type in rook, knight, bishop, queen, king, pawn
+        &.#{$type}
+          background-image: url("images/#{$color}_#{$type}.png")
+
+#chessboard
+  width: 8*$pieceSize
+  height: 8*$pieceSize
+
+  &.player-white .piece.white, &.player-black .piece.black
+    &:hover:not(.current)
+      background-color: #cce
+
+  > div
+    padding: 0
+    margin: 0
+    width: $pieceSize
+    height: $pieceSize
+    display: block
+    float: left
+    background-size: 100% 100%
+    background-color: #cba
+    &.lighter
+      background-color: #edb
+
+    &.current, &.current.lighter
+      background-color: #beb
+    &.playable
+      background-color: #bbe
+      &.lighter
+        background-color: #ccf
+
+
+// other pages
+#help
+  div.content
+    text-align: center
+

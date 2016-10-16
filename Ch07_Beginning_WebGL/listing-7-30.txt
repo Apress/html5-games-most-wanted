@@ -1,0 +1,44 @@
+<button id="reset" >Reset</button>        
+    …
+            positionStart = [],
+            positionChange = [],            
+            timeChange = 0.0;
+			
+            $(document).ready(function(){
+                var canvasObj = $("#canvas")
+                canvas = canvasObj.get(0);            
+                
+                canvasObj.mousedown(function(e){
+                    positionStart = [e.pageX, e.pageY];
+                    timeChange = new Date().getTime();
+                });
+                
+                canvasObj.mouseup(function(e){                    
+                    positionChange = [e.pageX - positionStart[0], e.pageY - positionStart[1]]
+                    timeChange = new Date().getTime() - timeChange;
+                    if(paused && (positionChange[1] < 0)){
+                        throwDart();
+                    }
+                });
+                
+                $("#reset").click(function(){
+                    resetDart();              
+                });
+            
+                initWebGL();
+                initShaders();
+                initTexture();
+                resetDart();
+                
+                executeProgram();
+            });
+
+            function resetDart(){                
+                paused = true;
+                dart_x = DART_START[0];
+                dart_y = DART_START[1];
+                dart_z = DART_START[2];
+                translation_angle = 0.0;
+                dart_z_velocity = 0.0;      
+                $("#reset").attr("disabled", true);
+            }  

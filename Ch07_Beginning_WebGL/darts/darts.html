@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body{	background: gray; }
+            canvas{	background: white; }
+        </style>
+        <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+        <script src="../gl-matrix-min.js"></script>
+    </head>
+    <body>
+        <canvas id="canvas" width="500" height="500"></canvas>
+        <button id="reset" >Reset</button>        
+        <p id="score" style="background: white; width: 200px; padding: 10px;">&nbsp;</p>
+        <script>
+            var gl = null,
+            canvas = null,
+            //shaders
+            COLOR_SHADER = 0,
+            TEXTURE_SHADER = 1,
+            NUM_SHADERS = 2,
+            shaderPrograms = [],
+            fragmentShaders = [],
+            vertexShaders = [],
+            vertexPositionAttributes = [],
+            vertexColorAttributes = [],
+            textureCoordAttributes = [],
+            //dart
+            octahedronVertexPositionBuffer = null,
+            octahedronVertexColorBuffer = null,
+            octahedronVertexIndexBuffer = null,
+            dartScale = .5,
+            dartWidth = .2 * dartScale
+            dartHeight = 2.0 * dartScale,
+            dartSkew = .5,
+            dart_x = 0.0,
+            dart_y = 0.0,
+            dart_z = 0.0,
+            dart_z_velocity = 0.0,
+            DART_START = [0.7, -0.5, -2.0],
+            //dartboard
+            dartboardVertexPositionBuffer = null,
+            dartboardVertexTexCoordBuffer = null,
+            dartboardTexture = null,
+            dartboardDiameter = 2.5,
+            dartboard_sections = 20, //number of circular sections
+            dartboard_z = -7.0,
+            //
+            paused = true,
+            mvMatrix = mat4.create(),
+            pMatrix = mat4.create(),
+            positionStart = [],
+            positionChange = [],
+            timeChange = 0.0;
+
+            $(document).ready(function(){
+                var canvasObj = $("#canvas")
+                canvas = canvasObj.get(0);            
+                
+                canvasObj.mousedown(function(e){
+                    positionStart = [e.pageX, e.pageY];
+                    timeChange = new Date().getTime();
+                });
+                
+                canvasObj.mouseup(function(e){                    
+                    positionChange = [e.pageX - positionStart[0], e.pageY - positionStart[1]]
+                    timeChange = new Date().getTime() - timeChange;
+                    if(paused && (positionChange[1] < 0)){
+                        throwDart();
+                    }
+                });                
+                
+                $("#reset").click(function(){
+                    resetDart();              
+                });
+
+                initWebGL();
+                initShaders();
+                initTexture();
+                resetDart();
+                
+                executeProgram();
+            });
+            
+            
+            function throwDart(){
+				resetDart();
+                paused = false;
+                var angle = Math.atan2(positionChange[1], positionChange[0]);
+				dart_x = Math.cos(angle) * dartboardDiameter; 
+                if(Math.random() < 0.5){
+					dart_x *= -1;
+				}
+                var velocity = (
+                Math.sqrt(positionChange[0]*positionChange[0] + positionChange[1]*positionChange[1])/
+                    timeChange
+            );
+                var yAngle = (velocity - .6);
+                dart_y = Math.sin(yAngle) * dartboardDiameter;
+                dart_z_velocity = -0.1;
+            }
+            
+            function resetDart(){                
+                paused = true;
+                dart_x = DART_START[0];
+                dart_y = DART_START[1];
+                dart_z = DART_START[2];
+                translation_angle = 0.0;
+                dart_z_velocity = 0.0;      
+                $("#reset").attr("disabled", true);
+            }            
+			
+            // shim layer with setTimeout fallback
+            window.requestAnimFrame = (function(){
+                return (window.requestAnimationFrame       || 
+                    window.webkitRequestAnimationFrame || 
+                    window.mozRequestAnimationFrame    || 
+                    window.oRequestAnimationFrame      || 
+                    window.msRequestAnimationFrame     || 
+                    function(/* function */ callback, /* DOMElement */ element){
+                    window.setTimeout(callback, 1000 / 60);
+                });
+            })();
+                        
+            function initWebGL() {
+                try {
+                    gl = canvas.getContext("experimental-webgl");
+                    gl.viewportWidth = canvas.width;
+                    gl.viewportHeight = canvas.height;
+                } catch(e) {
+                    alert(e);
+                }
+                if (!gl) {
+                    alert("Error trying to initialise WebGL");
+                } else {
+                    gl.clearColor(0.7, 0.7, 0.7, 1.0);    
+                    gl.enable(gl.DEPTH_TEST);
+                }
+            }
+
+            function makeShader(src, type){
+                var shader = gl.createShader(type);
+                gl.shaderSource(shader, src);            
+                gl.compileShader(shader);  
+
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {  
+                    alert("Error compiling shader: " + gl.getShaderInfoLog(shader));  
+                }  
+                return shader;
+            }
+			
+            function attachShaders(i){
+                gl.attachShader(shaderPrograms[i], vertexShaders[i]);  
+                gl.attachShader(shaderPrograms[i], fragmentShaders[i]);  
+                gl.linkProgram(shaderPrograms[i]);  
+        
+                if (!gl.getProgramParameter(shaderPrograms[i], gl.LINK_STATUS)) {  
+                    alert("Unable to initialize the shader program.");  
+                }  
+            }	
+
+            function createShaderProgram(i){        
+                shaderPrograms[i] = gl.createProgram();  
+                attachShaders(i);
+            }
+
+            function setupShaders(fragmentShaderSRC, vertexShaderSRC, i){                     
+                fragmentShaders[i] = makeShader(fragmentShaderSRC, gl.FRAGMENT_SHADER);
+                vertexShaders[i] = makeShader(vertexShaderSRC, gl.VERTEX_SHADER);
+        
+                createShaderProgram(i);
+            }			
+			            
+            function initShaders() {
+                var fragmentShaderSRC = null,
+                vertexShaderSRC = null;
+
+                var shaderFilenames = ['shader', 'tex_shader'];
+                for(var i=0; i< NUM_SHADERS; ++i){
+                    $.ajax({
+                        async: false,
+                        url: shaderFilenames[i] + '.fs',
+                        success: function (data) {
+                            fragmentShaderSRC = data.firstChild.textContent;
+                        },
+                        dataType: 'xml'
+                    });
+                    $.ajax({
+                        async: false,
+                        url: shaderFilenames[i] + '.vs',
+                        success: function (data) {
+                            vertexShaderSRC = data.firstChild.textContent;
+                        },
+                        dataType: 'xml'
+                    });
+                    setupShaders(fragmentShaderSRC, vertexShaderSRC, i);                        
+                }
+            }
+
+            function initTexture(){
+                dartboardTexture = gl.createTexture();
+                dartboardTexture.image = new Image();
+                dartboardTexture.image.onload = function() {
+                    handleLoadedTexture(dartboardTexture)
+                }
+
+                dartboardTexture.image.src = "dartboard.gif";
+            }
+                
+            function handleLoadedTexture(texture) {
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.bindTexture(gl.TEXTURE_2D, null);
+            }
+
+            function getMatrixUniforms(i){
+                shaderPrograms[i].pMatrixUniform = gl.getUniformLocation(shaderPrograms[i], "uPMatrix");
+                shaderPrograms[i].mvMatrixUniform = gl.getUniformLocation(shaderPrograms[i], "uMVMatrix"); 
+
+                if( i==TEXTURE_SHADER ){
+                    shaderPrograms[i].samplerUniform = gl.getUniformLocation(shaderPrograms[i], "uSampler");
+                }
+            }
+            
+            function setMatrixUniforms(i) {
+                gl.uniformMatrix4fv(shaderPrograms[i].pMatrixUniform, false, pMatrix);
+                gl.uniformMatrix4fv(shaderPrograms[i].mvMatrixUniform, false, mvMatrix);
+            }
+
+            function getVertexAttributes(i){
+                vertexPositionAttributes[i] = gl.getAttribLocation(shaderPrograms[i], "aVertexPosition");                          
+                gl.enableVertexAttribArray(vertexPositionAttributes[i]);  
+                    
+                if(i == TEXTURE_SHADER){
+                    textureCoordAttributes[i] = gl.getAttribLocation(shaderPrograms[i], "aTextureCoord");
+                    gl.enableVertexAttribArray(textureCoordAttributes[i]);           
+                }else if(i == COLOR_SHADER){
+                    vertexColorAttributes[i] = gl.getAttribLocation(shaderPrograms[i], "aVertexColor");
+                    gl.enableVertexAttribArray(vertexColorAttributes[i]);                                    
+                }
+            }
+                
+            function executeProgram(){
+                for(var i=0;i<NUM_SHADERS; ++i){
+                    getMatrixUniforms(i);
+                    getVertexAttributes(i);
+                }
+
+                initBuffers();            
+
+                (function animLoop(){
+                    drawScene();
+                    requestAnimFrame(animLoop, canvas);
+                })();
+            }
+
+            function drawScene() {  
+                gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);  
+                    
+                mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+
+                drawDartboard();
+                drawDart();                
+            }
+            
+            function drawDartboard(){               
+                //draw dartboard
+                gl.useProgram(shaderPrograms[TEXTURE_SHADER]);  
+              	
+                mat4.identity(mvMatrix);
+                mat4.translate(mvMatrix, [0, 0, dartboard_z]);
+                setMatrixUniforms(TEXTURE_SHADER);  
+                
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, dartboardTexture);
+                gl.uniform1i(shaderPrograms[TEXTURE_SHADER].samplerUniform, 0);
+                                   
+                gl.bindBuffer(gl.ARRAY_BUFFER, dartboardVertexPositionBuffer);  
+                gl.vertexAttribPointer(vertexPositionAttributes[TEXTURE_SHADER], 3, gl.FLOAT, false, 0, 0);  
+                    
+                gl.bindBuffer(gl.ARRAY_BUFFER, dartboardVertexTexCoordBuffer);
+                gl.vertexAttribPointer(textureCoordAttributes[TEXTURE_SHADER], 2, gl.FLOAT, false, 0, 0);
+              
+                gl.drawArrays(gl.TRIANGLE_FAN, 1, dartboard_sections);   
+            }
+
+            function checkIfReachedBoard(){
+                if(dart_z == DART_START[2] || Math.abs(dart_z - dartboard_z) < 0.001){
+                    paused = true;
+                    $("#reset").attr("disabled", false);
+                    calculateAndDisplayScore();
+                }
+            }
+            
+            function calculateAndDisplayScore(){
+                var scores = [13,4,18,1,20,
+                    5,12,9,14,11,                              
+                    6,10,15,2,17,
+                    3,19,7,16,8];                        
+                var final_angle = Math.atan2(dart_y, dart_x);
+                var final_angle_degrees = final_angle * 180/Math.PI;
+                var landed_section = Math.floor(final_angle_degrees/(360.0/dartboard_sections));
+
+                if(landed_section < 0){ landed_section = Math.abs(landed_section)+10; }
+                if(Math.sqrt(dart_x*dart_x + dart_y*dart_y) < (dartboardDiameter/2.0)){
+                    $("#score").html("<strong>Nice Throw: (" + scores[landed_section] + ")</strong>");
+                }else{
+                    $("#score").html("Practice is needed");
+                }
+            }
+
+            function drawDart(){
+                gl.useProgram(shaderPrograms[COLOR_SHADER]);                	
+            				
+                if(!paused){    
+                    checkIfReachedBoard();
+                }
+                mat4.identity(mvMatrix);
+                dart_z += dart_z_velocity;
+                dart_z = Math.max(dart_z, dartboard_z);
+                mat4.translate(mvMatrix, [dart_x, dart_y, dart_z]);		   
+                mat4.rotate(mvMatrix, 225, [1, 0, 0]);
+                
+                setMatrixUniforms(COLOR_SHADER);  
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, octahedronVertexPositionBuffer);  
+                gl.vertexAttribPointer(vertexPositionAttributes[COLOR_SHADER], 3, gl.FLOAT, false, 0, 0);  
+        
+                gl.bindBuffer(gl.ARRAY_BUFFER, octahedronVertexColorBuffer);
+                gl.vertexAttribPointer(vertexColorAttributes[COLOR_SHADER], 4, gl.FLOAT, false, 0, 0);
+        
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, octahedronVertexIndexBuffer);
+                gl.drawElements(gl.TRIANGLES, octahedronVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+            }  
+            
+            function initBuffers() {  
+                initOctahedronBuffer();
+                initDartboardBuffer();
+            }
+             
+            function initOctahedronBuffer(){
+                octahedronVertexPositionBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, octahedronVertexPositionBuffer);
+                var vertices = [
+                    // top faces
+                    0.0, dartHeight, 0.0,
+                    dartWidth, 0.0, dartWidth,
+                        -dartWidth, 0.0, dartWidth,
+
+                    0.0, dartHeight, 0.0,
+                    dartWidth, 0.0, -dartWidth,
+                        -dartWidth, 0.0, -dartWidth,
+
+                    0.0, dartHeight, 0.0,
+                    dartWidth, 0.0, dartWidth,
+                    dartWidth,  0.0, -dartWidth,
+
+                    0.0, dartHeight,  0.0,
+                        -dartWidth, 0.0,  dartWidth,
+                        -dartWidth,  0.0,  -dartWidth,
+
+                    //bottom faces
+                    0.0, -dartHeight * dartSkew, 0.0,
+                    dartWidth, 0.0, dartWidth,
+                        -dartWidth, 0.0, dartWidth,
+
+                    0.0, -dartHeight * dartSkew, 0.0,
+                    dartWidth, 0.0, -dartWidth,
+                        -dartWidth, 0.0, -dartWidth,
+
+                    0.0, -dartHeight * dartSkew, 0.0,
+                    dartWidth, 0.0, dartWidth,
+                    dartWidth,  0.0, -dartWidth,
+
+                    0.0, -dartHeight * dartSkew,  0.0,
+                        -dartWidth, 0.0,  dartWidth,
+                        -dartWidth,  0.0,  -dartWidth
+                ];
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+                octahedronVertexPositionBuffer.itemSize = 3;
+                octahedronVertexPositionBuffer.numItems = 24;
+
+                colors = [
+                    [1.0, 0.7, 0.0, 1.0], // gold
+                    [1.0, 0.7, 0.0, 1.0], // gold
+                    [1.0, 0.7, 0.0, 1.0], // gold
+                    [1.0, 0.7, 0.0, 1.0], // gold
+                    
+                    [0.0, 0.0, 1.0, 1.0], // blue
+                    [0.0, 0.0, 1.0, 1.0], // blue
+                    [0.0, 0.0, 1.0, 1.0], // blue
+                    [0.0, 0.0, 1.0, 1.0], // blue                   
+                ];
+                var unpackedColors = [];
+                //8 colors by 4 channels - rgba
+                for(var i=0; i < 8; ++i){
+                    for(var k=0; k < 3; ++k){
+                        var color = colors[i];
+                        unpackedColors = unpackedColors.concat(color);
+                    }
+                }
+
+                octahedronVertexColorBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, octahedronVertexColorBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(unpackedColors), gl.STATIC_DRAW);
+                
+                octahedronVertexColorBuffer.itemSize = 4;
+                octahedronVertexColorBuffer.numItems = 24;
+
+                var octahedronVertexIndices = [
+                    //top
+                    0, 1, 2,      3, 4, 5,    
+                    6, 7, 8,      9, 10, 11,    
+                    //bottom
+                    12, 13, 14,   15, 16, 17,
+                    18, 19, 20,   21, 22, 23
+                ];
+                
+                octahedronVertexIndexBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, octahedronVertexIndexBuffer);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(octahedronVertexIndices), gl.STATIC_DRAW);
+                octahedronVertexIndexBuffer.itemSize = 1;
+                octahedronVertexIndexBuffer.numItems = 24;
+            }
+         
+            function initDartboardBuffer(){
+                var vertices = [0,0,0], //center vertex
+                texCoords = [0,0],
+                x,
+                y,
+                radians = 0;
+
+                //programatically create vertices.
+                //will divide circle into 20 sections = 18 degrees each    
+                for(var i=0; i < dartboard_sections; i++){
+                    radians = i * 2.0 * Math.PI/dartboard_sections;
+                    
+                    x = Math.cos(radians);
+                    y = Math.sin(radians);
+
+                    texCoords = texCoords.concat([x/2.0 + .5, y/2.0 + .5]);
+                    vertices = vertices.concat([x*dartboardDiameter, y*dartboardDiameter, dartboard_z]);
+                }
+             
+                dartboardVertexPositionBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, dartboardVertexPositionBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+                dartboardVertexPositionBuffer.itemSize = 3;
+                dartboardVertexPositionBuffer.numItems = (dartboard_sections + 1);
+
+                dartboardVertexTexCoordBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, dartboardVertexTexCoordBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
+                dartboardVertexTexCoordBuffer.itemSize = 2;
+                dartboardVertexTexCoordBuffer.numItems = (dartboard_sections + 1);         
+            }  
+        </script>
+    </body>
+</html>

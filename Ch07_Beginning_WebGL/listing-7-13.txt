@@ -1,0 +1,14 @@
+			octahedronVertexPositionBuffer,
+            octahedronVertexColorBuffer,  
+            octahedronVertexIndexBuffer,  //index buffer for our faces
+            canvas = null,   //canvas DOM element reference
+            paused = false,  //pause/resume animation flag
+            height = 1.41,   //rounded square root of two
+            rotationRadians = 0.0, //the amount to rotate our octahedron
+            rotationVector = [1.0, 1.0, 1.0], //the axis to rotate our octahedron
+                                              //experiment with other values between 0 and 1
+            rotationIncrement = 0,  //amount to increase the rotation each animation iteration
+			x = 0, //translation amounts
+            y = 0,
+			z = 0,
+            translationAngle = 0;   //angle used to calculate x,y,z translation

@@ -1,0 +1,7 @@
+				for(var i=0; i < 6; ++i){
+                        var color = colors[i];
+                        unpackedColors = unpackedColors.concat(color);
+                }
+                
+                octahedronVertexColorBuffer.itemSize = 4;
+                octahedronVertexColorBuffer.numItems = 6;

@@ -1,0 +1,47 @@
+			function initShaders() {
+                var fragmentShaderSRC = null,
+                vertexShaderSRC = null;
+
+                var shaderFilenames = ['shader', 'tex_shader'];
+                for(var i=0; i< NUM_SHADERS; ++i){
+                    $.ajax({
+                        async: false,
+                        url: shaderFilenames[i] + '.fs',
+                        success: function (data) {
+                            fragmentShaderSRC = data.firstChild.textContent;
+                        },
+                        dataType: 'xml'
+                    });
+                    $.ajax({
+                        async: false,
+                        url: shaderFilenames[i] + '.vs',
+                        success: function (data) {
+                            vertexShaderSRC = data.firstChild.textContent;
+                        },
+                        dataType: 'xml'
+                    });
+                    setupShaders(fragmentShaderSRC, vertexShaderSRC, i);                        
+                }
+            }
+	
+    	    function attachShaders(i){
+                gl.attachShader(shaderPrograms[i], vertexShaders[i]);  
+                gl.attachShader(shaderPrograms[i], fragmentShaders[i]);  
+                gl.linkProgram(shaderPrograms[i]);  
+        
+                if (!gl.getProgramParameter(shaderPrograms[i], gl.LINK_STATUS)) {  
+                    alert("Unable to initialize the shader program.");  
+                }  
+            }	
+
+            function createShaderProgram(i){        
+                shaderPrograms[i] = gl.createProgram();  
+                attachShaders(i);
+            }
+
+            function setupShaders(fragmentShaderSRC, vertexShaderSRC, i){                     
+                fragmentShaders[i] = makeShader(fragmentShaderSRC, gl.FRAGMENT_SHADER);
+                vertexShaders[i] = makeShader(vertexShaderSRC, gl.VERTEX_SHADER);
+        
+                createShaderProgram(i);
+            }	

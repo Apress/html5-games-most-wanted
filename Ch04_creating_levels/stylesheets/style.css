@@ -1,0 +1,29 @@
+body {
+  font-family: Helvetica, Arial, san-serif;
+}
+
+section#grid-container {
+  width: 300px;
+  margin-right: 50px;
+
+  float: left;
+}
+
+section#bricks-container {
+  width: 100px;
+  margin-right: 50px;
+  float: left;
+}
+
+section#tracks-container {  
+  width: 300px;
+  float: left;
+}
+
+button#save, input#track-name {
+  float: right;
+}
+
+section#tracks-container h1 {
+  margin: 0;
+}

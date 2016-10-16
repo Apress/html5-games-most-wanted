@@ -1,0 +1,16 @@
+            function calculateAndDisplayScore(){
+                var scores = [13,4,18,1,20,
+                    5,12,9,14,11,                              
+                    6,10,15,2,17,
+                    3,19,7,16,8];                        
+                var final_angle = Math.atan2(dart_y, dart_x);
+                var final_angle_degrees = final_angle * 180/Math.PI;
+                var landed_section = Math.floor(final_angle_degrees/(360.0/dartboard_sections));
+
+                if(landed_section < 0){ landed_section = Math.abs(landed_section)+10; }
+                if(Math.sqrt(dart_x*dart_x + dart_y*dart_y) < (dartboardDiameter/2.0)){
+                    $("#score").html("<strong>Nice Throw: (" + scores[landed_section] + ")</strong>");
+                }else{
+                    $("#score").html("Practice is needed");
+                }
+            }

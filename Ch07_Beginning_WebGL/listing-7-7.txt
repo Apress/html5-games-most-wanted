@@ -1,0 +1,21 @@
+			function executeProgram(){
+                getMatrixUniforms();
+                getVertexAttributes();
+
+                initBuffers();            
+
+                drawScene();
+            }
+
+			function getMatrixUniforms(){
+                shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+                shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");          
+            }            
+
+            function getVertexAttributes(){
+				vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");                                          
+				gl.enableVertexAttribArray(vertexPositionAttribute);  
+                    
+                vertexColorAttribute = gl.getAttribLocation(shaderProgram, "aVertexColor");
+                gl.enableVertexAttribArray(vertexColorAttribute);
+            }

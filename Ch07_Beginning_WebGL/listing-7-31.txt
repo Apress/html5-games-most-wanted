@@ -1,0 +1,16 @@
+        function throwDart(){
+                resetDart();
+				paused = false;
+                var angle = Math.atan2(positionChange[1], positionChange[0]);
+                dart_x = Math.cos(angle) * dartboardDiameter; 
+                if(Math.random() < 0.5){
+					dart_x *= -1;
+				}
+				var velocity = (
+                Math.sqrt(positionChange[0]*positionChange[0] + positionChange[1]*positionChange[1])/
+                    timeChange
+				);
+                var yAngle = (velocity - .6);
+                dart_y = Math.sin(yAngle) * dartboardDiameter;
+                dart_z_velocity = -0.1;
+        }           

@@ -1,0 +1,3 @@
+[submodule "WebAppBuilder"]
+	path = WebAppBuilder
+	url = git@github.com:gre/WebAppBuilder.git

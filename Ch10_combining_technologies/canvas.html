@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript"><!--
+	window.addEventListener('load', function ()
+	{
+		// Get the canvas element.
+		var canvas = document.getElementById('myCanvas'),
+			w = 64,
+			h = 64,
+			step = 'in';
+		
+		if (!canvas || !canvas.getContext) {
+		  return;
+		}
+		
+		// Get the canvas 2d context.
+		var ctx = canvas.getContext('2d');
+		if (!ctx) {
+		  return;
+		}
+		
+		// Create new img element
+		var img = new Image();
+		// Set source path
+		img.src = 'ship.png';
+		
+		setInterval(function ()
+		{
+			if (step == 'in')
+			{
+				w++;
+				h++;
+			}
+			else if (step == 'out')
+			{
+				w--;
+				h--;
+			}
+			
+			if (w > 128)
+			{
+				w = 128;
+				step = 'out';
+			} else if (w < 64)
+			{
+				w = 64;
+				step = 'in';
+			}
+			
+			if (h > 128)
+			{
+				h = 128;
+				step = 'out';
+			}
+			else if (h < 64)
+			{
+				h = 64;
+				step = 'in';
+			}
+			
+			// Create the radial gradient
+			var gradient = ctx.createRadialGradient(
+				96+Math.round(w/2), 96+Math.round(h/2), 0, 96+Math.round(w/2), 96+Math.round(h/2), 
+				Math.round(Math.min(w, h)/2));
+				
+			gradient.addColorStop(0, "#00f");
+			gradient.addColorStop(1, "#00007d");
+			
+			// Use the gradient for the fillStyle.
+			ctx.fillStyle = gradient;
+			
+			// Ellipse radius and center.
+			var cx = 96 + w/2,
+				cy = 96 + h/2,
+				
+				rx = w/2,
+				ry = h/2;
+				
+			ctx.setTransform(1, 0, 0, 1, 0, 0); 
+			
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			
+			ctx.setTransform(1, 0, 0, 1, Math.round((canvas.width - w) / 2), 
+				Math.round((canvas.height - h) / 2));
+			
+			
+			// Drawing a cricle
+			ctx.beginPath();
+			ctx.arc(cx, cy, rx, ry, Math.PI*2, true); 
+			ctx.fill();
+			ctx.stroke();
+			ctx.closePath();
+			
+			// Drawing a ship
+			ctx.drawImage(img, w*2 - 196, h*2 - 196, img.width/2, img.height/2);
+		}, 1000/60);
+		
+	}, false);
+// --></script>
+</head>
+<body>
+	<canvas id="myCanvas" width="320" height="320">
+		Your browser does not have support for Canvas.
+	</canvas>
+</body>
+</html>

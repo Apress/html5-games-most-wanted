@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1;" /> 
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta name="proj-version" content="{{version}}" />
+  <title>Chess</title>
+  <link href="game.css" rel="stylesheet">
+  <script type="text/javascript" src="lib.min.js"></script>
+  <script type="text/javascript" src="game.min.js"></script>
+</head>
+
+<body>
+  <div id="pages">
+
+    <section id="menu">
+      <h1><img src="icon.png"/> Chess</h1>
+      <ul>
+        <li><a class="showOnlyIfContinuableGame" href="#!/game/continue">Continue Game</a></li>
+        <li><a href="#!/game/new">New Game</a></li>
+        <li><a href="#!/help">Help</a></li>
+      </ul>
+    </section>
+
+    <section id="game">
+      <header class="buttons">
+        <a href="javascript:history.back()" class="back">Back</a>
+      </header>
+      <div id="black-eated"></div>
+      <div id="chessboardContainer">
+        <div id="chessboard"></div>
+      </div>
+      <div id="white-eated"></div>
+    </section>
+
+    <section id="help">
+      <header class="buttons">
+        <a href="javascript:history.back()" class="back">Back</a>
+      </header>
+      <div class="content">
+        <p class="i18n-help_welcome">Welcome to the Chess game demo.</p>
+        <p class="i18n-credit">by Gaetan Renaudeau - @greweb</p>
+      </div>
+    </section>
+
+  </div>
+</body>
+

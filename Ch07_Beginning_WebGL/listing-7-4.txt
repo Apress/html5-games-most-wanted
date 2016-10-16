@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body{	background: gray; }
+            canvas{	background: white; }
+        </style>
+        <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+        <script src="gl-matrix-min.js"></script>
+    </head>
+    <body>
+        <canvas id="canvas" width="500" height="500"></canvas>

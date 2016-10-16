@@ -1,0 +1,40 @@
+			function getMatrixUniforms(i){
+                shaderPrograms[i].pMatrixUniform = gl.getUniformLocation(shaderPrograms[i], "uPMatrix");
+                shaderPrograms[i].mvMatrixUniform = gl.getUniformLocation(shaderPrograms[i], "uMVMatrix"); 
+
+                if( i==TEXTURE_SHADER ){
+                    shaderPrograms[i].samplerUniform = gl.getUniformLocation(shaderPrograms[i], "uSampler");
+                }
+            }
+            
+            function setMatrixUniforms(i) {
+                gl.uniformMatrix4fv(shaderPrograms[i].pMatrixUniform, false, pMatrix);
+                gl.uniformMatrix4fv(shaderPrograms[i].mvMatrixUniform, false, mvMatrix);
+            }
+
+            function getVertexAttributes(i){
+                vertexPositionAttributes[i] = gl.getAttribLocation(shaderPrograms[i], "aVertexPosition");                          
+                gl.enableVertexAttribArray(vertexPositionAttributes[i]);  
+                    
+                if(i == TEXTURE_SHADER){
+                    textureCoordAttributes[i] = gl.getAttribLocation(shaderPrograms[i], "aTextureCoord");
+                    gl.enableVertexAttribArray(textureCoordAttributes[i]);           
+                }else if(i == COLOR_SHADER){
+                    vertexColorAttributes[i] = gl.getAttribLocation(shaderPrograms[i], "aVertexColor");
+                    gl.enableVertexAttribArray(vertexColorAttributes[i]);                                    
+                }
+            }
+                
+            function executeProgram(){
+                for(var i=0;i<NUM_SHADERS; ++i){
+                    getMatrixUniforms(i);
+                    getVertexAttributes(i);
+                }
+
+                initBuffers();            
+
+                (function animLoop(){
+                    drawScene();
+                    requestAnimFrame(animLoop, canvas);
+                })();
+            }

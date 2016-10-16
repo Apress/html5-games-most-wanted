@@ -1,0 +1,1362 @@
+<!DOCTYPE html> 
+<html> 
+<head> <title>A to B </title>
+  <script src="processing-0.9.7.min.js"></script> 
+  <script src="init.js"></script>
+  <script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+<link rel="stylesheet" href="style.css"/>
+</head> 
+
+<body>
+<audio id="soundtrack" autoplay loop><source src="song.mp3"><source src="song.ogg"> get audio son.</audio>
+<audio id="sound0"><source src="3.ogg"><source src="3.wav"> get audio son.</audio>
+<audio id="sound1"><source src="2.ogg"><source src="2.wav"> get audio son.</audio>
+<audio id="sound2"><source src="0.ogg"><source src="0.wav"> get audio son.</audio>
+<audio id="sound3"><source src="1.ogg"><source src="1.wav"> get audio son.</audio>    
+<audio id="sound4"><source src="4.ogg"><source src="4.wav">get audio son.</audio>
+<audio><source src="win0.ogg"><source src="win0.wav"></audio>
+<audio><source src="win1.ogg"><source src="win1.wav"></audio>
+<audio><source src="win2.ogg"><source src="win2.wav"></audio>
+<audio><source src="win3.ogg"><source src="win3.wav"></audio>
+<audio><source src="win4.ogg"><source src="win4.wav"></audio>
+<audio><source src="win5.ogg"><source src="win5.wav"></audio>
+<audio><source src="win6.ogg"><source src="win6.wav"></audio>
+<audio><source src="win7.ogg"><source src="win7.wav"></audio>
+<audio><source src="win8.ogg"><source src="win8.wav"></audio>
+<audio><source src="win9.ogg"><source src="win9.wav"></audio>
+<audio><source src="win10.ogg"><source src="win10.wav"></audio>
+<audio><source src="win11.ogg"><source src="win11.wav"></audio>
+<audio><source src="win12.ogg"><source src="win12.wav"></audio>
+<audio><source src="win13.ogg"><source src="win13.wav"></audio>
+<audio><source src="win0.ogg"><source src="win0.wav"></audio>
+<audio><source src="win1.ogg"><source src="win1.wav"></audio>
+<audio><source src="win2.ogg"><source src="win2.wav"></audio>
+<audio><source src="win3.ogg"><source src="win3.wav"></audio>
+
+
+
+
+<h1 id="titleName">A to B</h1>
+<h2 id="loading">loading...</h2>
+<script type="text/javascript">
+var blah, browserWidth, showing,boobface;
+
+browserWidth = $(window).width();
+
+$("#loading").css("left", (browserWidth-200) * .5).css("top",325);
+
+function showHow(){
+	$("#how").css("left",blah);
+	if(!showing){
+	$("#how").show();
+	showing = true;
+	}
+	else{
+		$("#how").hide();
+		showing = false;
+
+	}
+}
+$(document).ready(function() {
+boobface = $("audio")[0];
+boobface.volume = .4;
+boobface.play();
+showing = false;
+blah = ((browserWidth-944) * .5);
+});
+</script>
+<script type="application/processing"> 
+
+/* @pjs preload="slow.png,speed.png,tramp.png,wall.png,flip.png, ball.png"; */
+PImage slowImage, speedImage, trampImage, wallImage, flipImage, ballImage;
+
+Ball ball;
+Modifier [] mods;
+PFont font;
+PVector goalLocation;
+int theScore=0;
+int points;
+int numTurns=0;
+int currentLevel =0;
+int mouseXDif, mouseYDif;
+boolean midDrag; 
+int dragId;
+int tempD; //the mouse -> mod distance 
+boolean placing; //when the player is moving mods
+boolean ready; //if all the mods are placed correctly
+boolean levelOver=false;
+int mouseProx  = 50;  //test if the mod should be dragged
+boolean gameOver = false;
+boolean scoresReady = false;
+int fadeAlpha = 255;
+char [] initials;
+int currentPos = 0;
+int cursorPos = 0;
+int cursorCounter = 0;
+int dir = 1;
+boolean notSubbed = true;
+String dataSet;
+int topScores = new int[10];
+String topNames = new String[10];
+int numLevels = 18;
+boolean showReward = false;
+int countdown;
+PVector pointsLoc;
+
+/*MODIFIERS:
+ ball - (bw)
+ 0 = booster (red)
+ 1 = reducer (blue)
+ 2 = wall (green)
+ 3 = tramp (yellow)
+ 4 = flip (purple)
+ 
+ */
+
+int rate;  
+boolean hof = true;
+
+void setup() {
+  size(900,500);
+  smooth();
+  slowImage = loadImage("slow.png");
+  speedImage = loadImage("speed.png");
+  flipImage = loadImage("flip.png");
+  trampImage = loadImage("tramp.png");
+  wallImage = loadImage("wall.png");
+  ballImage = loadImage("ball.png");
+  background(0);
+    frameRate(24);
+  mods = new Modifier[10];
+  initials = new char[3];
+
+  ball = new Ball();
+  ellipseMode(CENTER);
+  rectMode(CENTER);
+  imageMode(CENTER);
+  goalLocation = new PVector(0,0);
+  pointsLoc = new PVector(0,0);
+  font = loadFont("Verdana");
+  getScores();
+  textFont(font);
+}
+
+void draw() {
+
+  background(0);
+  
+  /***HALL OF FAME*****/
+  if(hof) {
+
+    //show the hall of fame
+    
+    fill(255);
+    textSize(22);
+    if(scoresReady) {
+      for(int x = 0; x<topScores.length(); x++) {
+        textAlign(RIGHT);
+        fill(255);
+        text(topScores[x], width/2-10,85+x*37); 
+        textAlign(LEFT);
+        fill(150);
+        text(topNames[x], width/2+10,85+x*37);
+      }
+      textSize(30);
+      fill(225,255,0);
+      textAlign(CENTER);
+      text("All-Time High Scores", width/2, 40);
+      
+      textSize(25);
+      textAlign(CENTER);
+      if(frameCount%30 <15){
+      fill(150,0);
+      }
+      else{
+      fill(150);	
+      }	
+      text("Press UP to Play",width/2,height-30);
+
+    }
+    
+  }
+
+  
+  /****NOT HALL OF FAME******/	
+  else {
+
+	/*****GAME IN PROGRESS******/
+	if(!gameOver) {
+      
+      /****PLACING MODS****/
+      if(placing) {
+        if(ready) {
+          fill(150);
+          textSize(25);
+          textAlign(CENTER);
+          text("press UP to shoot",width/2,30);
+        }
+        else {
+          fill(150);
+          textSize(25);
+          textAlign(CENTER);
+          text("place modifiers", width/2,30);
+        }
+
+        if(midDrag) {
+          checkMove();
+        }
+      }
+
+      /****BALL IN MOTION*****/
+      else {
+        ball.update();
+        if(!levelOver) {
+
+          if(ball.checkEdges()) {
+          	numTurns++;
+          	points-=5;
+          	if(points<=0){
+          		points = 0;
+          	}
+            placing = true;
+
+            for(int s = 0; s<mods.length; s++) {
+              if(mods[s]!=null) {
+                mods[s].unHit();
+              }
+            }
+          }
+        }
+        
+        else {
+          if(showReward){
+          	if(countdown<6){
+          		showReward = false;
+          	}
+          	pointsLoc.y-=5;
+          	textAlign(CENTER);
+          	textSize(26);
+			countdown-=5;
+          	fill(#F0FE00, countdown*2);
+          	text("+"+points, pointsLoc.x, pointsLoc.y);
+          }
+          int tempCurLevel = currentLevel +1;
+          textAlign(CENTER);
+          textSize(25);
+          fill(150);
+          text("press UP to continue",width/2,30);
+          textSize(30);
+          fill(255);
+          text("You beat level "+ tempCurLevel+"!",width/2,250);
+        }
+        fill(0);
+        rate = parseInt(frameRate);
+        //text("frame rate: "+rate,800,20);
+        if(ball.hitsTarget()) {
+          boolean tempPass = true;
+          for(int i =0;i<mods.length;i++) {
+            if(mods[i]!=null) {
+              if(!mods[i].checkHit()) {
+                tempPass = false;
+              }
+            }
+          }
+          if(tempPass) {
+          	
+          	var tempWin = $("audio")[currentLevel+6];
+          	tempWin.play();
+          	showReward = true;
+          	pointsLoc.x = goalLocation.x;
+          	pointsLoc.y = goalLocation.y-5;
+            levelOver = true;
+            ball.setExists(false);
+            ball.curbSpeed();
+            fadeAlpha = 30;
+          }
+        }
+      }
+    }
+
+
+
+
+    else {
+
+      textSize(30);
+      for(int a=0; a<currentPos; a++) {
+        fill(255);
+        String allChars = new String(initials[a]);
+        String tempChar = allChars.toUpperCase();
+        text(tempChar,a*26+420,345);
+      }
+      if(cursorCounter == -7 || cursorCounter == 7) {
+        dir *=-1;
+      }
+      cursorCounter +=dir;
+      if(cursorCounter <0) {
+        stroke(255);
+      }
+      else {
+        stroke(0);
+      }
+      cursorPos=currentPos*26+420;
+      if(currentPos<3) {
+        line(cursorPos, 350, cursorPos + 20, 350);
+      }
+      else {
+        //execute big nasty!
+        textAlign(CENTER);
+        textSize(25);
+        text("Press UP", width/2, 400);
+      }
+      textSize(40);
+      textAlign(CENTER);
+      fill(255);
+
+      text("You Won!", width/2,200);
+      fill(150);
+      textSize(25);
+      text("Score: "+ theScore,width/2,250);
+      fill(255);
+      text("Enter Initials:",width/2,300);
+    }
+
+    fill(255);
+    noStroke();
+    rect(width/2,40,width,2);
+    textSize(16);
+    textAlign(LEFT);
+
+    fill(#0FF5FC);
+    text("score: "+ theScore,10,25);
+
+    fill(#F0FE00);
+
+    text("attempts: "+ numTurns, 620,25);
+
+    fill(#D53DFF);
+
+    text("level "+ (currentLevel+1)+"/"+numLevels, 800,25);
+
+    fill(#6CFE00);
+    text("possible points: "+ points, 120,25);
+
+    if(!gameOver) {
+
+      fill(255, fadeAlpha);
+      stroke(255,fadeAlpha);
+
+      ellipse(goalLocation.x,goalLocation.y, 5,5);
+      textSize(12);
+      textAlign(CENTER);
+      text("B", goalLocation.x,goalLocation.y-10);
+    }
+    ball.display(); 
+    for(int i = 0; i<mods.length; i++) {
+      if(mods[i]!=null) {
+        mods[i].update();
+      }
+    }
+  }
+}
+void getScores() {
+  $.post("beginScore.php", function(data) {
+    dataSet = data;
+    String [] splitCol = split(dataSet,":");
+    for(int a = 0; a<10; a++) {
+      String [] splitCom = split(splitCol[a],",");
+      topScores[a] = splitCom[0];
+      topNames[a] = splitCom[1].toUpperCase();
+    }
+    scoresReady = true;
+    $("#loading").hide();
+  }
+  );
+}
+void mousePressed() {
+  if(placing) {
+    //put in a check to see if game is running
+    for(int i=0; i<mods.length;i++) {
+      if(mods[i]!=null) {
+        mods[i].toggleView(true);
+      }
+    }
+    for(int a = 0; a<mods.length; a++) {
+      if(!midDrag) {
+        if(mods[a]!=null) {
+          tempD = int(abs(mouseX-mods[a].getLocation().x)+abs(mouseY-mods[a].getLocation().y));
+          if(tempD<mouseProx) {
+            setOffsets(a);
+            mods[a].dragging(true, mouseXDif, mouseYDif);
+            midDrag = true;
+            dragId = a;
+          }
+        }
+      }
+    }
+  }
+}
+void setOffsets(int x) {
+  mouseXDif = int(mouseX - mods[x].getLocation().x);
+  mouseYDif = int(mouseY - mods[x].getLocation().y);
+}
+void mouseReleased() {
+  for(int i=0; i<mods.length;i++) {
+    if(mods[i]!=null) {
+      mods[i].toggleView(false);
+    }
+  }
+  midDrag = false;
+  mods[dragId].dragging(false,0,0);
+  if(placing){
+  checkMove();
+  }
+}
+void checkMove() {
+  ready = true;
+  for(int i=0; i<mods.length; i++) {
+    if(mods[i]!=null) {
+      mods[i].toggleView(false);
+    }
+  }
+  for(int a = 0; a<mods.length-1; a++) {
+    if(mods[a]!=null) {
+      for(int b=a+1; b<mods.length; b++) {
+        if(mods[b]!=null) {
+          if(mods[a].intersects(mods[b])) {
+            mods[a].toggleView(true);
+            mods[b].toggleView(true);
+            ready = false;
+          }
+        }
+      }
+      if(mods[a].intersects2(ball.getLocation(), goalLocation)) {
+      	mods[a].toggleView(true);
+        ready = false;
+      }
+    }
+  }
+}
+void setupLevel() {
+  fadeAlpha = 255;
+  countdown = 125;
+  showReward = false;
+  points = 100;
+  numTurns = 0;
+  ball.setExists(true);
+  //reset mods
+  for(int i = 0; i<mods.length; i++) {
+    mods[i] = null;
+  }
+  //reset ball location
+
+  //reset booleans
+  midDrag = false;
+  placing = true;
+  ready = false;
+  
+  if(currentLevel==0) {
+    //wall
+    mods[0] = new Modifier(2);
+    mods[0].setLocation(width-60,height-30);
+    ball.reset(100,150);
+    ball.setMods(mods);
+    goalLocation.x = 700;
+    goalLocation.y = 200;
+    ball.setTarget(goalLocation);
+  }
+  else if(currentLevel==1) {
+    //booster
+    goalLocation.x = 500;
+    goalLocation.y = 200;
+    ball.setTarget(goalLocation);
+    ball.reset(50,400);
+    mods[0] = new Modifier(0);
+    mods[0].setLocation(width-60,height-30);
+
+    ball.setMods(mods);
+  }
+  else if(currentLevel==2) {
+    //reducer
+    goalLocation.x = 620;
+    goalLocation.y = 450;
+    ball.setTarget(goalLocation);
+    ball.reset(420,240);
+    mods[0] = new Modifier(1);
+    mods[0].setLocation(width-60,height-30);
+
+    ball.setMods(mods);
+  }
+  else if(currentLevel==3) {
+    //bouncy wall
+    goalLocation.x = 150;
+    goalLocation.y = 300;
+    ball.setTarget(goalLocation);
+    ball.reset(600,300);
+    mods[0] = new Modifier(3);
+    mods[0].setLocation(width-60,height-30);
+
+    ball.setMods(mods);
+  }
+  else if(currentLevel==4) {
+    //graivty flip
+    goalLocation.x = 450;
+    goalLocation.y = 100;
+    ball.setTarget(goalLocation);
+    ball.reset(100,300);
+    mods[0] = new Modifier(4);
+    mods[0].setLocation(width-60,height-30);
+
+    ball.setMods(mods);
+  }
+  else if(currentLevel==5) {
+    //gravity flip, reducer
+    goalLocation.x = 500;
+    goalLocation.y = 100;
+    ball.setTarget(goalLocation);
+    ball.reset(20,130);
+    mods[0] = new Modifier(1);
+    mods[1] = new Modifier(4);
+    mods[0].setLocation(width-60,height-30);
+    mods[1].setLocation(width-160,height-30);
+
+    ball.setMods(mods);
+  }
+
+  else if(currentLevel==6) {
+    //wall, booster
+    goalLocation.x = 150;
+    goalLocation.y = 200;
+    ball.setTarget(goalLocation);
+    ball.reset(600,400);
+    mods[0] = new Modifier(0);
+    mods[1] = new Modifier(2);
+    mods[0].setLocation(width-60,height-30);
+    mods[1].setLocation(width-180,height-30);
+
+    ball.setMods(mods);
+  }
+  else if(currentLevel==7) {
+    //reducer, tramp, reducer
+    goalLocation.x = 800;
+    goalLocation.y = 300;
+    ball.setTarget(goalLocation);
+    ball.reset(50,250);
+    mods[0] = new Modifier(1);
+    mods[1] = new Modifier(3);
+    mods[2] = new Modifier(1);
+    mods[0].setLocation(width-60,height-30);
+    mods[1].setLocation(width-190,height-30);
+    mods[2].setLocation(width-320, height-30);
+
+    ball.setMods(mods);
+  }
+  else if(currentLevel==8) {
+    //flip, bouncy, wall
+    goalLocation.x = 50;
+    goalLocation.y = 150;
+    ball.setTarget(goalLocation);
+    ball.reset(width-250,height-150);
+    mods[0] = new Modifier(2);
+    mods[1] = new Modifier(3);
+    mods[2] = new Modifier(4);
+    mods[0].setLocation(width-80,height-30);
+    mods[1].setLocation(width-220,height-30);
+    mods[2].setLocation(width-330, height-30);
+
+    ball.setMods(mods);
+  } 
+  else if(currentLevel==9) {
+    //booster, flip, reducer
+    goalLocation.x = 750;
+    goalLocation.y = 120;
+    ball.setTarget(goalLocation);
+    ball.reset(100,300);
+    mods[0] = new Modifier(0);
+    mods[1] = new Modifier(1);
+    mods[2] = new Modifier(4);
+    mods[0].setLocation(width-60,height-30);
+    mods[1].setLocation(width-140,height-30);
+    mods[2].setLocation(width-220, height-30);
+
+    ball.setMods(mods);
+  } 
+  else if(currentLevel==10) {
+    //wall, wall, tramp, tramp
+    goalLocation.x = 450;
+    goalLocation.y = 200;
+    ball.setTarget(goalLocation);
+    ball.reset(450,300);
+    mods[0] = new Modifier(2);
+    mods[1] = new Modifier(3);
+    mods[2] = new Modifier(2);
+    mods[3] = new Modifier(3);
+    mods[0].setLocation(width-60,height-30);
+    mods[1].setLocation(width-190,height-30);
+    mods[2].setLocation(width-320, height-30);
+    mods[3].setLocation(width-450, height-30);
+
+    ball.setMods(mods);
+  }
+  else if(currentLevel==11) {
+    //speed, wall, speed, wall
+    goalLocation.x = 200;
+    goalLocation.y = 450;
+    ball.setTarget(goalLocation);
+    ball.reset(550,150);
+    mods[0] = new Modifier(0);
+    mods[1] = new Modifier(2);
+    mods[2] = new Modifier(0);
+    mods[3] = new Modifier(2);
+    mods[0].setLocation(width-60,height-30);
+    mods[1].setLocation(width-170,height-30);
+    mods[2].setLocation(width-270, height-30);
+    mods[3].setLocation(width-370, height-30);
+
+    ball.setMods(mods);
+  } 
+  else if(currentLevel==12) {
+    //all gravity
+    goalLocation.x = 850;
+    goalLocation.y = 250;
+    ball.setTarget(goalLocation);
+    ball.reset(50,250);
+    mods[0] = new Modifier(4);
+    mods[1] = new Modifier(4);
+    mods[2] = new Modifier(4);
+    mods[3] = new Modifier(4);
+    mods[0].setLocation(width-60,height-30);
+    mods[1].setLocation(width-140,height-30);
+    mods[2].setLocation(width-220, height-30);
+    mods[3].setLocation(width-300, height-30);
+
+    ball.setMods(mods);
+  } 
+  else if(currentLevel==13) {
+    //booster, reducer, flip, wall
+    goalLocation.x = 50;
+    goalLocation.y = 100;
+    ball.setTarget(goalLocation);
+    ball.reset(50,400);
+    mods[0] = new Modifier(0);
+    mods[1] = new Modifier(1);
+    mods[2] = new Modifier(2);
+    mods[3] = new Modifier(3);
+    mods[0].setLocation(width-60,height-30);
+    mods[1].setLocation(width-140,height-30);
+    mods[2].setLocation(width-240, height-30);
+    mods[3].setLocation(width-370, height-30);
+
+    ball.setMods(mods);
+  }
+
+  else if(currentLevel==14) {
+    //gravity, tramp, tramp, gravity
+    goalLocation.x = 50;
+    goalLocation.y = 150;
+    ball.setTarget(goalLocation);
+    ball.reset(600,150);
+    mods[0] = new Modifier(4);
+    mods[1] = new Modifier(3);
+    mods[2] = new Modifier(4);
+    mods[3] = new Modifier(3);
+    mods[0].setLocation(width-60,height-30);
+    mods[1].setLocation(width-160,height-30);
+    mods[2].setLocation(width-260, height-30);
+    mods[3].setLocation(width-360, height-30);
+
+    ball.setMods(mods);
+  } 
+  else if(currentLevel==15) {
+    //2 reducers, 2 booster, wall
+    goalLocation.x = 800;
+    goalLocation.y = 150;
+    ball.setTarget(goalLocation);
+    ball.reset(50,400);
+    mods[0] = new Modifier(1);
+    mods[1] = new Modifier(0);
+    mods[2] = new Modifier(2);
+    mods[3] = new Modifier(1);
+    mods[4] = new Modifier(0);
+    mods[0].setLocation(width-60,height-30);
+    mods[1].setLocation(width-140,height-30);
+    mods[2].setLocation(width-240, height-30);
+    mods[3].setLocation(width-340, height-30);
+    mods[4].setLocation(width-420, height-30);
+
+
+    ball.setMods(mods);
+  } 
+
+  else if(currentLevel==16) {
+    //2 walls, gravity, tramp, slow
+    goalLocation.x = 850;
+    goalLocation.y = 400;
+    ball.setTarget(goalLocation);
+    ball.reset(50,400);
+    mods[0] = new Modifier(0);
+    mods[1] = new Modifier(1);
+    mods[2] = new Modifier(2);
+    mods[3] = new Modifier(3);
+    mods[4] = new Modifier(4);
+    mods[0].setLocation(width-60,height-30);
+    mods[1].setLocation(width-140,height-30);
+    mods[2].setLocation(width-240, height-30);
+    mods[3].setLocation(width-360, height-30);
+    mods[4].setLocation(width-460, height-30);
+
+
+    ball.setMods(mods);
+  } 
+  else if(currentLevel==17) {
+    //2 walls, gravity, tramp, slow
+    goalLocation.x = 550;
+    goalLocation.y = 250;
+    ball.setTarget(goalLocation);
+    ball.reset(350,250);
+    mods[0] = new Modifier(1);
+    mods[1] = new Modifier(2);
+    mods[2] = new Modifier(3);
+    mods[3] = new Modifier(2);
+    mods[4] = new Modifier(4);
+    mods[0].setLocation(width-60,height-30);
+    mods[1].setLocation(width-160,height-30);
+    mods[2].setLocation(width-280, height-30);
+    mods[3].setLocation(width-400, height-30);
+    mods[4].setLocation(width-500, height-30);
+
+
+    ball.setMods(mods);
+  } 
+
+
+
+  else {
+    gameOver=true;
+    ball.setDone();
+  }
+  ready =false;
+}
+void keyTyped() {
+  if(gameOver) {
+    if(currentPos>2) {
+      //nada
+    }
+    else {
+ 	    if(key>200){
+ 	    //shouldnt happen	
+ 	    }
+ 	    else{
+       initials[currentPos] = char(int(key));
+      currentPos++;
+ 	    }
+    }
+  }
+}
+
+
+void keyPressed() {
+
+  if(keyCode==RIGHT) {
+    if(mods[dragId].getType()==2 || mods[dragId].getType()==3) {
+      mods[dragId].spin(1);
+    }
+  }
+  else if(keyCode==LEFT) {
+    if(mods[dragId].getType()==2 || mods[dragId].getType()==3) {
+      mods[dragId].spin(-1);
+    }
+  }
+  
+  else if(keyCode==UP) {
+  	
+  	//if the score list is showing
+    if(hof && scoresReady){
+    	hof = false;
+    	scoresReady = false;
+    	gameOver = false;	
+    	setupLevel();
+	}
+    
+    else {
+    	
+      //enter a new high score 	
+      if(gameOver && currentPos > 2 && notSubbed) {
+        String enterName = new String(initials);
+        String [] stupid = split(enterName, ",");
+        String stupider = stupid[0]+stupid[1]+stupid[2];
+        $.post("highscorelist.php", { score: theScore, name: stupider},
+        function(data) {
+          dataSet = data;
+          String [] splitCol = split(dataSet,":");
+          for(int a = 0; a<10; a++) {
+            String [] splitCom = split(splitCol[a],",");
+            topScores[a] = splitCom[0];
+            topNames[a] = splitCom[1].toUpperCase();
+          }
+          
+          //location.reload(true);
+		  scoresReady = true;
+          hof = true;
+	      currentLevel=0;
+	      theScore = 0;
+	      currentPos = 0;
+	      initials = new char[3];
+	      
+
+        }         
+
+        , "text");
+        
+         notSubbed = false;
+
+      }
+      
+      /****game is not over and hof is not showing******/
+      if(!gameOver){
+      
+        if(levelOver) {
+          theScore+=points;
+          currentLevel++;
+          setupLevel();
+          levelOver = false;
+        }
+        else {
+          if(ready) {
+            placing = false;
+            mods[dragId].dragging(false,0,0);
+      
+        for(int i=0; i<mods.length;i++) {
+          if(mods[i]!=null) {
+            mods[i].toggleView(false);
+          }
+        }
+
+          }
+        }
+      }
+    }
+  }
+}
+
+class Ball {
+  PVector location;
+  PVector velocity;
+
+  PVector gravity;
+  PVector tempBoost;
+  PVector tempVelocity;
+  PVector target;
+  PVector start;
+  float rotateAngle;
+  float rotateVelocity;
+  int currentTime = 0;
+  int timer = 5;
+  int ballSize = 25;
+  float ballBoundary=25;
+  int maxSpeed = 30;
+  int collisionDistance = 35;
+  Modifier [] mods;
+  boolean boosting = false;
+  PVector tempDistance;
+  int curMag = 0;
+  int tempModType;
+  int magnetSize = 150;
+  int counter = 0;
+  int limitCount = 5;
+  int theAlpha = 255;
+  boolean doneSon = false;
+  boolean exists = true;
+  Ball() {
+    start = new PVector(0,0);
+    location = new PVector(50,400);
+    velocity = new PVector(5,-10);
+    gravity = new PVector(0,.5);
+    tempBoost = new PVector(0,0);
+    rotateAngle = 0;
+    rotateVelocity = -.1;
+  }
+  void reset(int x, int y) {
+    start.x = x;
+    start.y = y;
+    location.x = x;
+    location.y = y;
+    velocity.x = 5;
+    velocity.y = -10;
+    gravity.y = .5;
+    rotateAngle = 0;
+    rotateVelocity = -.1;
+  }
+
+  void update() {
+
+
+    velocity.add(gravity); 
+
+    location.add(velocity);
+
+    velocity.limit(maxSpeed);
+    ballBoundary = ballSize;
+    if(velocity.mag()>ballSize) {
+      ballBoundary = velocity.mag()+1;
+      for(int a =0; a<mods.length; a++) {
+        if(mods[a]!=null) {
+          mods[a].setBallSize(ballBoundary);
+        }
+      }
+    }
+    if(exists) {
+      for(int x=0; x<mods.length; x++) {
+        if(mods[x]!=null && !mods[x].checkHit()) {
+          collisionCheck(x);
+        }
+      }
+    }
+
+    rotateAngle+=rotateVelocity;
+    curMag = int(velocity.mag());
+  }
+
+  void setExists(boolean e) {
+    exists = e;
+  }
+
+
+  void setAngle(float a) {
+    rotateVelocity += a;
+  }
+  void setDone() {
+    doneSon = true;
+  }
+  void display() {
+    if(!exists) {
+      theAlpha-=10;
+      if(theAlpha <=0) {
+        theAlpha = 0;
+      }
+    }
+    else {
+      theAlpha = 255;
+    }
+    if(!exists) {
+      fill(255,30);
+    }
+    else {
+      fill(255);
+    }
+    textAlign(CENTER);
+    if(doneSon) {
+      fill(255,0);
+    }
+    text("A", start.x,start.y-20);
+    fill(0,theAlpha);
+    stroke(255,theAlpha);
+    strokeWeight(3);
+
+    pushMatrix();
+
+    translate(location.x,location.y);
+    rotate(rotateAngle);
+    noTint();
+    if(theAlpha < 255){
+    	tint(150,50);
+    }
+    image(ballImage,0,0);
+    //ellipse(0,0,ballSize,ballSize);
+    //noStroke();
+    //stroke(255,theAlpha);
+    //line(-ballSize/3,-ballSize/3,ballSize/3,ballSize/3);
+    popMatrix();
+  }
+
+  void setMods(Modifier [] m) {
+    mods = m;
+  }
+
+  //if the ball goes off screen reset it
+  boolean checkEdges() {
+    if(location.x <0 || location.x > width || location.y <0 || location.y>height) {
+
+      location.x = start.x;
+      location.y = start.y;
+      velocity.x = 5;
+      velocity.y = -10;
+      rotateAngle = 0;
+      rotateVelocity=-.1;
+      gravity.y = .5;
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+  void collisionCheck(int x) {
+    tempModType = mods[x].getModType();
+    if(tempModType==2 || tempModType==3) {
+      //check if it hits to change rotation
+      boolean beforeHitCheck = mods[x].checkHit();
+
+      tempVelocity = mods[x].checkWall(location, velocity);
+      velocity.x = tempVelocity.x;
+      velocity.y = tempVelocity.y; 
+      if(!beforeHitCheck && mods[x].checkHit()) {
+        rotateVelocity*=-1;
+        setAngle(rotateVelocity);
+        mods[x].hit();
+        String tempS = "sound" + mods[x].getModType();
+        document.getElementById(tempS).play();
+      }
+    }
+    //if its a circle 
+    else {
+      tempDistance = PVector.sub(mods[x].getLocation(), location);
+
+      float tz= tempDistance.mag();
+      if(tempDistance.mag()<((ballBoundary/2+25))) {
+        mods[x].hit();
+        String tempS = "sound" + mods[x].getModType();
+
+        document.getElementById(tempS).play();
+        //document.getElementById(").play();
+        if(mods[x].getType()==0) {
+          velocity.normalize();
+          velocity.mult(30);
+          setAngle(-.15);
+        }
+        else if(mods[x].getType()==1) {
+          velocity.mult(.3);
+          setAngle(.05);
+        }
+        else if(mods[x].getType()==4) {
+          gravity.y *=-1;
+        }
+      }
+    }
+  }
+  boolean hitsTarget() {
+    if(location.dist(target) < ballBoundary/2+5) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+  PVector getLocation() {
+    return location;
+  }
+  void setTarget(PVector p) {
+    target = p;
+  }
+  void curbSpeed() {
+    while(velocity.mag()>5) {
+      velocity.x *=.8;
+      velocity.y *=.8;
+    }
+  }
+}
+
+class Modifier {
+
+  PVector location;
+  int boundSize = 150;
+  int boundStroke = 255;
+  int modSize = 50;
+  int col;
+  boolean drag = false;
+  int modType;
+  boolean showing;
+  int offsetX, offsetY;
+  boolean beenHit = false;
+  int alph = 255;
+  float tempLocation;
+  Modifier tempnube;
+  boolean showBoundary;
+  float ballBoundarySize = 25;
+  //WALL variables
+  PVector endpoint1, endpoint2, tempNorm, perp1, perp2, origEnd1, origEnd2;
+  float wallLength;
+  PVector[] coords; // for collision
+  PVector incidence, reflection;
+  float tempMag, rad, ang, halfWall;
+  PVector tempLoc;
+
+
+  Modifier(int z) {
+
+    modType = z;
+	tempLoc = new PVector(0,0);
+    if(modType == 0) { 
+      col = #0FF5FC;
+      location = new PVector(0,0);
+    }
+    else if(modType==1) {
+      col = #D53DFF;
+      location = new PVector(0,0);
+    }
+    else if(modType==2) {
+
+      rad = 30;
+      halfWall = 50;
+      endpoint1 = new PVector(0,0);
+      endpoint2 = new PVector(0,0);
+      origEnd1 = new PVector(halfWall,0);
+      origEnd2 = new PVector(-halfWall,0);
+      tempNorm = new PVector(0,0);
+      incidence = new PVector(0,0);
+      reflection = new PVector(0,0);
+      perp1 = new PVector(0,0);
+      perp2 = new PVector(0,0);
+      location = new PVector(((endpoint2.x+endpoint1.x)/2),((endpoint2.y+endpoint1.y)/2));
+      tempMag = 0;
+      ang = 0;
+      wallLength = halfWall*2;
+      col = #FF647A;
+    }
+    else if(modType==3) {
+
+      rad = 30;
+      halfWall = 50;
+      endpoint1 = new PVector(0,0);
+      endpoint2 = new PVector(0,0);
+      origEnd1 = new PVector(halfWall,0);
+      origEnd2 = new PVector(-halfWall,0);
+      tempNorm = new PVector(0,0);
+      incidence = new PVector(0,0);
+      reflection = new PVector(0,0);
+      perp1 = new PVector(0,0);
+      perp2 = new PVector(0,0);
+      location = new PVector(((endpoint2.x+endpoint1.x)/2),((endpoint2.y+endpoint1.y)/2));
+      tempMag = 0;
+      ang = 0;
+      wallLength = halfWall*2;
+      col = #6CFE00;
+    }
+
+    else if(modType == 4) {
+      location = new PVector(0,0);
+      col = #F0FE00;
+    }
+
+    showing = true;
+  }
+  void toggleView(boolean z) {
+    showBoundary = z;
+  }
+  /**WALLL CHECK***/
+  PVector checkWall(PVector l, PVector v) {
+    PVector newVec = new PVector(v.x,v.y);
+
+    coords = new PVector[ceil(wallLength)];
+
+    for (int i=5; i<coords.length-5; i++) {
+      coords[i] = new PVector((endpoint1.x+((endpoint2.x-endpoint1.x)/wallLength)*i),(endpoint1.y + ((endpoint2.y-endpoint1.y)/wallLength)*i));
+    }
+    // calculate base top normal
+    tempNorm.x = endpoint2.x - endpoint1.x;
+    tempNorm.y = endpoint2.y - endpoint1.y;
+
+    perp1.x = -tempNorm.y+location.x;
+    perp1.y = tempNorm.x+location.y;
+    perp2.x = tempNorm.y+location.x;
+    perp2.y = -tempNorm.x+location.y;
+
+    tempNorm = PVector.sub(perp1,perp2);
+
+    tempNorm.normalize();
+
+    tempMag = v.mag();
+    // normalized incidence vector
+    incidence.x = v.x;
+    incidence.y = v.y;
+
+    incidence.normalize();
+
+
+    // detect and handle collision
+    for (int i=0; i<coords.length; i++) {
+      // check distance between ellipse and base top coordinates
+
+      if (l.dist(coords[i]) < ballBoundarySize) {
+        hit();
+        // calculate dot product of incident vector and base top normal 
+        float tempDot = incidence.dot(tempNorm);
+
+        // calculate reflection vector
+        reflection.x = 2*tempNorm.x*tempDot - incidence.x;
+        reflection.y = 2*tempNorm.y*tempDot - incidence.y;
+
+
+        // assign reflection vector to direction vector
+        newVec.x= -reflection.x*tempMag;
+        newVec.y= -reflection.y*tempMag;
+        if(modType==3) {
+          newVec.mult(1.5);
+        }
+      }
+    }
+
+    return newVec;
+  }
+  void setBallSize(float newS) {
+    ballBoundarySize = newS;
+  }
+
+  void update() {
+    if(drag) {
+      location.x = mouseX-offsetX;
+      location.y = mouseY-offsetY;
+      if(modType==2 || modType ==3) {
+        endpoint1.x = origEnd1.x+ location.x;
+        endpoint1.y = origEnd1.y +location.y;
+        endpoint2.x = origEnd2.x+ location.x;
+        endpoint2.y = origEnd2.y+ location.y;
+        tempLoc.x = (endpoint1.x+endpoint2.x)*.5;
+        tempLoc.y = (endpoint1.y+endpoint2.y)*.5;
+      }
+    }
+    display();
+  }
+
+  void display() {
+
+    
+       
+    if(modType==0){ 
+      noTint();
+      if(alph<200){
+      	tint(150,50);
+      }
+       image(speedImage,location.x,location.y);
+    }
+    else if(modType==1){
+    	noTint();
+      if(alph<200){
+      	tint(150,50);
+      }
+       image(slowImage,location.x,location.y);
+    }
+    else if(modType==2) {
+    	noTint();
+       if(alph<200){
+      	tint(150,50);
+      }
+       pushMatrix();
+       translate(location.x,location.y);
+       rotate(ang);
+       image(wallImage,0,0);
+       popMatrix();
+    }  
+    else if(modType==3) {
+    	noTint();
+	  if(alph<200){
+      	tint(150,50);
+      }
+      pushMatrix();
+       translate(location.x,location.y);
+       rotate(ang);
+       image(trampImage,0,0);
+       popMatrix();
+    }
+    
+	else if(modType==4){
+    	noTint();
+      if(alph<200){
+      	tint(150,50);
+      }
+       image(flipImage,location.x,location.y);
+    }
+   
+
+
+
+    if(showBoundary) {
+
+      noFill();
+      stroke(255,boundStroke);
+      ellipse(location.x,location.y,boundSize, boundSize);
+    }
+  }
+
+  int getModType() {
+    return modType;
+  }
+  void hit() {
+    alph = 30;
+    beenHit = true;
+  }
+  void unHit() {
+    alph = 255;
+    beenHit = false;
+  }
+  boolean checkHit() {
+    return beenHit;
+  }
+  PVector getLocation() {
+    return location;
+  }
+  void setLocation(int a, int b) {
+    location.x = a;
+    location.y = b;
+    if(modType==2 || modType==3) {
+      endpoint1.x = location.x+origEnd1.x;
+      endpoint1.y = location.y+origEnd1.y;
+      endpoint2.x = location.x+origEnd2.x;
+      endpoint2.y = location.y+origEnd2.y;
+    }
+  }
+  void dragging(boolean z, int a, int b) {
+    drag = z; 
+    offsetX = a;
+    offsetY = b;
+  }
+  int getType() {
+    return modType;
+  }
+  boolean intersects2(PVector loc, PVector gol) {
+    float tempD = location.dist(loc);
+    float tempD2 = location.dist(gol);
+    if(tempD < 100 || tempD2 <100) {
+	   return true;
+    }
+    else { 
+      return false;
+    }
+  }
+  boolean intersects(Modifier nube) {
+    tempnube = nube;
+    tempLocation = location.dist(nube.getLocation());
+
+    if(tempLocation<150) {
+      return true;
+    }  
+    else {
+      return false;
+    }
+  }
+  void spin(int a) {
+    if(drag) {
+      ang+=.05*a;
+      origEnd2.y = sin(ang)*halfWall;
+      origEnd2.x = cos(ang)*halfWall;
+      origEnd1.y = sin(ang+PI)*halfWall;
+      origEnd1.x = cos(ang+PI)*halfWall;
+      endpoint1.x = origEnd1.x+location.x;
+      endpoint1.y = origEnd1.x+location.y;
+      endpoint2.x = origEnd2.x+location.x;
+      endpoint2.y = origEnd2.x+location.y;
+    }
+  }
+
+}
+
+</script>
+<div id="tit"><canvas width="900" height="500"></canvas> </div>
+<div id="extraInfo">
+<p id="me">by: <a href="http://russellgoldenberg.com">russell goldenberg</a></p>
+<p id="instruct"><a href="#" onClick="showHow()">instructions</a></p>
+<p id="music">music by: <a href="http://ccmixter.org/files/gurdonark/26491"> Gurdonark</a> / <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a></p>
+</div>
+<div id="how" onClick="showHow()"><a href="#"><img src="help.png"></a></div>
+</body> 
+</html> 

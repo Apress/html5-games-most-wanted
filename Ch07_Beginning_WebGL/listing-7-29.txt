@@ -1,0 +1,23 @@
+			function drawDart(){
+                gl.useProgram(shaderPrograms[COLOR_SHADER]);                	
+            				
+                if(!paused){ 
+					checkIfReachedBoard();
+                }
+				mat4.identity(mvMatrix);
+                dart_z += dart_z_velocity;
+                dart_z  = Math.max(dart_z, dartboard_z);
+                mat4.translate(mvMatrix, [dart_x, dart_y, dart_z]);		   
+                mat4.rotate(mvMatrix, 225, [1, 0, 0]);
+                
+                setMatrixUniforms(COLOR_SHADER);  
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, octahedronVertexPositionBuffer);  
+                gl.vertexAttribPointer(vertexPositionAttributes[COLOR_SHADER], 3, gl.FLOAT, false, 0, 0);  
+        
+                gl.bindBuffer(gl.ARRAY_BUFFER, octahedronVertexColorBuffer);
+                gl.vertexAttribPointer(vertexColorAttributes[COLOR_SHADER], 4, gl.FLOAT, false, 0, 0);
+        
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, octahedronVertexIndexBuffer);
+                gl.drawElements(gl.TRIANGLES, octahedronVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+            }
